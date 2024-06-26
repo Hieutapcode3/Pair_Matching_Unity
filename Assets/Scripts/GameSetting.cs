@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 public class GameSetting : MonoBehaviour
 {
-    private readonly Directory<EPuzzleCategories,string> _puzzleCatDirection = new Dictionary<EPuzzleCategories,string>();
+    private readonly Dictionary<EPuzzleCategories,string> _puzzleCatDirection = new Dictionary<EPuzzleCategories,string>();
     private int                     _settings;
     private const int               _SettingNumber = 2;
 
@@ -43,8 +42,14 @@ public class GameSetting : MonoBehaviour
     }
     void Start()
     {
+        SetPuzzleCatDirectory();
         _gameSettings = new Settings();
         ResetGameSettings();
+    }
+    private void SetPuzzleCatDirectory()
+    {
+        _puzzleCatDirection.Add(EPuzzleCategories.Fruits, "Fruits");
+        _puzzleCatDirection.Add(EPuzzleCategories.Vegetables, "Vegetables");
     }
 
     public void SetPairNumber(EPairNumber Nb)
@@ -63,7 +68,7 @@ public class GameSetting : MonoBehaviour
         }
         _gameSettings.PuzzleCategories = categories;
     }
-    public EPairNumber GetPuzzleNumber()
+    public EPairNumber GetPairNumber()
     {
         return _gameSettings.PairsNumber;
     }
@@ -87,6 +92,14 @@ public class GameSetting : MonoBehaviour
     }
     public string GetPuzzleCattegoryTextureDirectionName()
     {
-
+        if (_puzzleCatDirection.ContainsKey(_gameSettings.PuzzleCategories))
+        {
+            return "Graphics/PuzzleCat/" + _puzzleCatDirection[_gameSettings.PuzzleCategories] + "/";
+        }
+        else
+        {
+            Debug.LogError("ERROR: CANNot Get");
+            return "";
+        }
     }
 }
