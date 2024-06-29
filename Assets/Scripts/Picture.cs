@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Picture : MonoBehaviour
 {
+    public AudioClip PressSound;
     private Material _firstMateria;
     private Material _secondMateria;
     private Quaternion _currenRotaiton;
@@ -11,7 +12,9 @@ public class Picture : MonoBehaviour
     [HideInInspector] public bool Revealed = false;
     private PictureManager _pictureManager;
     private bool _clicked = false;
-    private int _index; 
+    private int _index;
+
+    private AudioSource _audio;
 
     public void SetIndex(int id) { _index = id; }
     public int GetIndex() { return _index;}
@@ -21,6 +24,8 @@ public class Picture : MonoBehaviour
         _clicked = false;
         _pictureManager = GameObject.Find("PictureManager").GetComponent<PictureManager>();
         _currenRotaiton = gameObject.transform.rotation;
+        _audio = GetComponent<AudioSource>();
+        _audio.clip = PressSound;
     }
 
     void Update()
@@ -32,8 +37,13 @@ public class Picture : MonoBehaviour
         if(!_clicked)
         {
             _pictureManager.CurrentPuzzleState = PictureManager.PuzzleState.PuzzleRotating;
+            if (!GameSetting.Instance.IsSoundEffectMuted())
+            {
+                _audio.Play();
+            }
             StartCoroutine(LoopRotation(45,false));
             _clicked = true;
+
         }
     }
     public void FlipBack()
@@ -42,6 +52,10 @@ public class Picture : MonoBehaviour
         {
             _pictureManager.CurrentPuzzleState = PictureManager.PuzzleState.PuzzleRotating;
             Revealed = false;
+            if (!GameSetting.Instance.IsSoundEffectMuted())
+            {
+                _audio.Play();
+            }
             StartCoroutine(LoopRotation(45,true));
         }
     }
@@ -50,7 +64,7 @@ public class Picture : MonoBehaviour
         var rot = 0f;
         const float dir = 1f;
         const float rotSpeed = 100.0f;
-        const float rotSpeed1 = 80.0f;
+        const float rotSpeed1 = 90.0f;
         var startAngle = angle;
         var assigned = false;
         if(FirstMat)
@@ -105,9 +119,14 @@ public class Picture : MonoBehaviour
     {
         gameObject.GetComponent<Renderer>().material = _firstMateria;
 
-    }public void ApplySecondMaterial()
+    }
+    public void ApplySecondMaterial()
     {
         gameObject.GetComponent<Renderer>().material = _secondMateria;
 
+    }
+    public void Deactivate()
+    {
+        gameObject.SetActive(false);
     }
 }

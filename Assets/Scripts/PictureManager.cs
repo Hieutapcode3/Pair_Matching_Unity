@@ -99,8 +99,10 @@ public class PictureManager : MonoBehaviour
                 _picToDesTroy1 = _firstRevealedPic;
                 _picToDesTroy2 = _secondRevealedPic;
             }
-
-            CurrentGameState = GameState.FlipBack;
+            else
+            {
+                CurrentGameState = GameState.FlipBack;
+            }
         }
         CurrentPuzzleState = PictureManager.PuzzleState.CanRotate;
         if(CurrentGameState == GameState.Checking)
@@ -112,6 +114,7 @@ public class PictureManager : MonoBehaviour
     private void DestroyPicture()
     {
         PuzzleRevealedNumber = RevealedState.NoRevealed;
+        System.Threading.Thread.Sleep(200);
         PictureList[_picToDesTroy1].Deactivate();
         PictureList[_picToDesTroy2].Deactivate();
         _revealedPicNumber = 0;

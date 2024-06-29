@@ -7,6 +7,7 @@ public class GameSetting : MonoBehaviour
     private readonly Dictionary<EPuzzleCategories,string> _puzzleCatDirection = new Dictionary<EPuzzleCategories,string>();
     private int                     _settings;
     private const int               _SettingNumber = 2;
+    private bool _muteFx = false;
 
     public enum EPairNumber
     {
@@ -101,5 +102,13 @@ public class GameSetting : MonoBehaviour
             Debug.LogError("ERROR: CANNot Get");
             return "";
         }
+    }
+    public void MuteSoundEffect(bool muted)
+    {
+        _muteFx = muted;
+    }
+    public bool IsSoundEffectMuted()
+    {
+        return _muteFx;
     }
 }
