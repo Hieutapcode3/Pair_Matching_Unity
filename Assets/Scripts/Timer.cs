@@ -41,4 +41,12 @@ public class Timer : MonoBehaviour
         GUI.Label(new Rect(Camera.main.rect.x + 20, 10, 120, 50),"" +   _minutes.ToString("00") + ":" + _seconds.ToString("00"),ClockStyle);
         GUI.matrix = _oldMatrix;
     }
+    public float GetCurrentTime()
+    {
+        return _timer;
+    }
+    public void StopTimer()
+    {
+        _stopTimer = true;
+    }
 }

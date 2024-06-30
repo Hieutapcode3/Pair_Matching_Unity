@@ -127,6 +127,12 @@ public class Picture : MonoBehaviour
     }
     public void Deactivate()
     {
+        StartCoroutine(DeactivateCorutine());
+    }
+    private IEnumerator DeactivateCorutine()
+    {
+        Revealed = false;
+        yield return new WaitForSeconds(1);
         gameObject.SetActive(false);
     }
 }

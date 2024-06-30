@@ -2,12 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PictureManager : MonoBehaviour
 {
     public Picture PicturePrefab;
     public Transform PicSpawnPosition;
     public Vector2 StartPosition = new Vector2(-2.15f,3.62f);
+
+    [Space]
+    [Header("End Game Screen")]
+    public GameObject EndgamePanel;
+    public GameObject NewBestScoreTxt;
+    public GameObject YourScoreTxt;
+    public GameObject EndTimeTxt;
     public enum GameState
     {
         NoAction,MovingOnPosition,DeletingPuzzles,FlipBack,Checking,GameEnd
@@ -43,6 +51,13 @@ public class PictureManager : MonoBehaviour
     private int _revealedPicNumber = 0;
     private int _picToDesTroy1;
     private int _picToDesTroy2;
+
+    private bool _corutingStarted = false;
+
+    private int _pairNumber;
+    private int _removedPairs;
+    private Timer _gameTimer;
+
     void Start()
     {
         CurrentGameState = GameState.NoAction;
@@ -51,6 +66,11 @@ public class PictureManager : MonoBehaviour
         _revealedPicNumber = 0;
         _firstRevealedPic = -1;
         _secondRevealedPic = -1;
+
+        _removedPairs = 0;
+        _pairNumber = (int)GameSetting.Instance.GetPairNumber();
+
+        _gameTimer = GameObject.Find("Main Camera").GetComponent<Timer>();
 
         LoadMaterials();
         if(GameSetting.Instance.GetPairNumber() == GameSetting.EPairNumber.E10Pairs)
@@ -114,16 +134,18 @@ public class PictureManager : MonoBehaviour
     private void DestroyPicture()
     {
         PuzzleRevealedNumber = RevealedState.NoRevealed;
-        System.Threading.Thread.Sleep(200);
         PictureList[_picToDesTroy1].Deactivate();
         PictureList[_picToDesTroy2].Deactivate();
         _revealedPicNumber = 0;
+        _removedPairs++;
         CurrentGameState = GameState.NoAction;
         CurrentPuzzleState = PuzzleState.CanRotate;
     }
-    private void FlipBack()
+    private IEnumerator FlipBack()
     {
-        System.Threading.Thread.Sleep(500);
+        _corutingStarted = true;
+        yield return new WaitForSeconds(0.5f);
+
         PictureList[_firstRevealedPic].FlipBack();
         PictureList[_secondRevealedPic].FlipBack();
 
@@ -132,7 +154,7 @@ public class PictureManager : MonoBehaviour
 
         PuzzleRevealedNumber = RevealedState.NoRevealed;
         CurrentGameState = GameState.NoAction;
-
+        _corutingStarted = false;
     }
     private void LoadMaterials()
     {
@@ -160,15 +182,55 @@ public class PictureManager : MonoBehaviour
             if(CurrentPuzzleState == PuzzleState.CanRotate)
             {
                 DestroyPicture();
+                CheckGameEnd();
             }
         }
         if(CurrentGameState == GameState.FlipBack)
         {
-            if(CurrentPuzzleState == PuzzleState.CanRotate)
+            if(CurrentPuzzleState == PuzzleState.CanRotate && !_corutingStarted)
             {
-                FlipBack();
+               StartCoroutine(FlipBack());
             }
         }
+
+        if(CurrentGameState == GameState.GameEnd)
+        {
+            if (PictureList[_firstRevealedPic].gameObject.activeSelf == false && 
+                PictureList[_secondRevealedPic].gameObject.activeSelf == false &&
+                EndgamePanel.activeSelf == false)
+            {
+                ShowEndGameInformation();
+            }
+        }
+    }
+    private void ShowEndGameInformation()
+    {
+        EndgamePanel.SetActive(true);
+        if (Config.IsBestScore())
+        {
+            NewBestScoreTxt.SetActive(true);
+            YourScoreTxt.SetActive(false);
+        }
+        else
+        {
+            NewBestScoreTxt.SetActive(false);
+            YourScoreTxt.SetActive(true);
+        }
+        var timer = _gameTimer.GetCurrentTime();
+        var minutes = Mathf.Floor(timer / 60);
+        var seconds = Mathf.Floor(timer % 60);
+        var newTxt = minutes.ToString("00") + ":" + seconds.ToString("00");
+        EndTimeTxt.GetComponent<Text>().text = newTxt;
+    }
+    private bool CheckGameEnd()
+    {
+        if(_removedPairs == _pairNumber && CurrentGameState != GameState.GameEnd)
+        {
+            CurrentGameState = GameState.GameEnd;
+            _gameTimer.StopTimer();
+            Config.PlaceScoreOnBoard(_gameTimer.GetCurrentTime());
+        }
+        return (CurrentGameState == GameState.GameEnd);
     }
     private void SpawnPictureMesh(int rows,int colums,Vector2 Pos,Vector2 offset,bool scaleDown)
     {
