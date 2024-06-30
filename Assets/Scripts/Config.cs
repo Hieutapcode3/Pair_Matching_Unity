@@ -99,7 +99,7 @@ public class Config
     }
     private static void PlaceScoreOnBoard(float time, float[] scoreTimeList, string[] pairNumberList)
     {
-        var theTime = System.DateTime.Now.ToString("hh:mm:");
+        var theTime = System.DateTime.Now.ToString("hh:mm");
         var theData = System.DateTime.Now.ToString("MM/dd/yyyy");
         var currentDate = theData + "T" + theTime;
         for (int i = 0; i < NumberOfScoreRecords; i++)
